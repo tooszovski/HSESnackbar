@@ -7,6 +7,56 @@
 
 import UIKit
 
+extension NSObjectProtocol {
+
+  func with(_ closure: (Self) -> Void) -> Self {
+    closure(self)
+    return self
+  }
+
+}
+
+public extension UIColor {
+  enum SnackBarColors {
+    static var defaultText: UIColor {
+      if #available(iOS 13, *) {
+        return UIColor.label.withAlphaComponent(0.8)
+      } else {
+        return UIColor(white: 0, alpha: 0.8)
+      }
+    }
+
+    static var toastBackground : UIColor {
+      if #available(iOS 13, *) {
+        return UIColor { (UITraitCollection: UITraitCollection) -> UIColor in
+          if UITraitCollection.userInterfaceStyle == .dark {
+            return #colorLiteral(red: 0.2, green: 0.2, blue: 0.2, alpha: 1)
+          } else {
+            return .white
+          }
+        }
+      } else {
+        return .white
+      }
+    }
+    static var defaultShadow : UIColor {
+      if #available(iOS 13, *) {
+        return .label
+      } else {
+        return .black
+      }
+    }
+  }
+}
+
+extension UIView {
+  func addSubviews(_ views: [UIView]) {
+    views.forEach {
+      addSubview($0)
+    }
+  }
+}
+
 open class HSSnackbar: UIView {
   // MARK: - Subviews
   fileprivate let contentView = UIView().with {
@@ -42,13 +92,9 @@ open class HSSnackbar: UIView {
 
   /// Dismiss callback.
   let dismissClosure: DismissClosure?
-
   var animationDuration: TimeInterval = 0.5
-
   let margins: UIEdgeInsets
-
   let contentInset: UIEdgeInsets
-
   var animationSpringWithDamping: CGFloat
   var animationInitialSpringVelocity: CGFloat
 
@@ -140,12 +186,12 @@ open class HSSnackbar: UIView {
 
 public extension HSSnackbar {
 
-  @objc func show() {
+  @objc func show(on view: UIView) {
     // Only show once
     guard superview == nil else { return }
 
     // Create dismiss timer
-    dismissTimer = Timer(timeInterval: 3,
+    dismissTimer = Timer(timeInterval: 5,
                          target: self,
                          selector: #selector(dismiss),
                          userInfo: nil,
@@ -166,16 +212,13 @@ public extension HSSnackbar {
                        constant: -contentInset.bottom).isActive = true
 
     // Get super view to show
-    guard let superView = UIApplication.shared.keyWindow else {
-      fatalError("HSSnackbar needs a keyWindows to display.")
-    }
-    superView.addSubview(self)
+    view.addSubview(self)
 
     let toItem: Any?
     if #available(iOS 11.0, *) {
-      toItem = superView.safeAreaLayoutGuide
+      toItem = view.safeAreaLayoutGuide
     } else  {
-      toItem = superView
+      toItem = view
     }
     bottomMarginConstraint = NSLayoutConstraint(
       item: self, attribute: .bottom, relatedBy: .equal,
@@ -189,13 +232,13 @@ public extension HSSnackbar {
       toItem: toItem, attribute: .trailing, multiplier: 1, constant: -margins.right).isActive = true
     NSLayoutConstraint(
       item: self, attribute: .centerX, relatedBy: .equal,
-      toItem: superView, attribute: .centerX, multiplier: 1, constant: 0).isActive = true
+      toItem: view, attribute: .centerX, multiplier: 1, constant: 0).isActive = true
 
     NSLayoutConstraint(
       item: self, attribute: .height, relatedBy: .greaterThanOrEqual,
       toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: HSSnackbar.snackbarMinHeight).isActive = true
 
-    superView.addConstraint(bottomMarginConstraint!)
+    view.addConstraint(bottomMarginConstraint!)
 
     showWithAnimation()
 
@@ -234,7 +277,7 @@ public extension HSSnackbar {
 
   fileprivate func dismissAnimated(_ animated: Bool) {
     guard dismissTimer != nil else { return }
-
+    
     invalidDismissTimer()
     let snackbarHeight = frame.size.height
     var safeAreaInsets = UIEdgeInsets.zero

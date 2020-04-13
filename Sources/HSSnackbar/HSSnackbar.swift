@@ -97,6 +97,7 @@ open class HSSnackbar: UIView {
   let contentInset: UIEdgeInsets
   var animationSpringWithDamping: CGFloat
   var animationInitialSpringVelocity: CGFloat
+  var messageDuration: TimeInterval
 
   // MARK: - Private property
 
@@ -121,11 +122,13 @@ open class HSSnackbar: UIView {
               margins: UIEdgeInsets = UIEdgeInsets(top: 0, left: 12, bottom: 16, right: 12),
               contentInset: UIEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10),
               animationSpringWithDamping: CGFloat = 0.7,
-              animationInitialSpringVelocity: CGFloat = 5) {
+              animationInitialSpringVelocity: CGFloat = 5,
+              messageDuration: TimeInterval = 1.5) {
     self.animationSpringWithDamping = animationSpringWithDamping
     self.animationInitialSpringVelocity = animationInitialSpringVelocity
     self.contentInset = contentInset
     self.margins = margins
+    self.messageDuration = messageDuration
     dismissClosure = dismiss
     super.init(frame: .zero)
     messageLabel.text = message
@@ -191,7 +194,7 @@ public extension HSSnackbar {
     guard superview == nil else { return }
 
     // Create dismiss timer
-    dismissTimer = Timer(timeInterval: 5,
+    dismissTimer = Timer(timeInterval: messageDuration,
                          target: self,
                          selector: #selector(dismiss),
                          userInfo: nil,

@@ -75,7 +75,7 @@ open class HSSnackbar: UIView {
     $0.font = UIFont.systemFont(ofSize: 13, weight: .medium)
     $0.backgroundColor = UIColor.clear
     $0.lineBreakMode = .byTruncatingTail
-    $0.numberOfLines = 0;
+    $0.numberOfLines = 0
     $0.textAlignment = .left
   }
 
@@ -309,7 +309,7 @@ public extension HSSnackbar {
                 self?.superview?.layoutIfNeeded()
         },
                completion: { [weak self] (finished) -> Void in
-                guard let `self` = self else { return }
+                guard let self = self else { return }
                 self.dismissClosure?(self)
                 self.removeFromSuperview()
 

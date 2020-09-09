@@ -164,19 +164,21 @@ open class HSSnackbar: UIView {
     layer.shadowColor = UIColor.SnackBarColors.defaultShadow.cgColor
     layer.shadowOffset = CGSize(width: 0, height: 2)
 
-    contentView.addSubviews([iconImageView,
-                             messageLabel])
+    contentView.addSubviews([
+        iconImageView,
+        messageLabel
+    ])
 
     let views = ["iconImageView": iconImageView,
                  "messageLabel": messageLabel]
 
-    let layout = ["H:|[iconImageView(==20)]-4-[messageLabel]-(>=10)-|",
-                  "V:|-14-[iconImageView(==20)]-14-|",
+    let layout = ["H:|[iconImageView(==20)]-8-[messageLabel]-(>=10)-|",
+                  "V:|-(>=14)-[iconImageView(==20)]-(>=14)-|",
                   "V:|-14-[messageLabel]-14-|"]
     var constraints = [NSLayoutConstraint]()
     layout.forEach {
       constraints += NSLayoutConstraint.constraints(withVisualFormat: $0,
-                                                    options: [],
+                                                    options: .alignAllCenterY,
                                                     metrics: nil,
                                                     views: views)
     }
@@ -194,25 +196,46 @@ public extension HSSnackbar {
     guard superview == nil else { return }
 
     // Create dismiss timer
-    dismissTimer = Timer(timeInterval: messageDuration,
-                         target: self,
-                         selector: #selector(dismiss),
-                         userInfo: nil,
-                         repeats: false)
+    dismissTimer = Timer(
+        timeInterval: messageDuration,
+        target: self,
+        selector: #selector(dismiss),
+        userInfo: nil,
+        repeats: false
+    )
     RunLoop.main.add(dismissTimer!, forMode: .common)
 
     NSLayoutConstraint
-      .activate([contentView.leftAnchor.constraint(equalTo: self.leftAnchor,
-                                                   constant: contentInset.left),
-                 contentView.rightAnchor.constraint(equalTo: self.rightAnchor,
-                                                    constant: contentInset.right)])
-    NSLayoutConstraint(item: contentView,
-                       attribute: .bottom,
-                       relatedBy: .equal,
-                       toItem: self,
-                       attribute: .bottom,
-                       multiplier: 1,
-                       constant: -contentInset.bottom).isActive = true
+        .activate(
+            [
+                contentView.leftAnchor.constraint(
+                    equalTo: self.leftAnchor,
+                    constant: contentInset.left
+                ),
+                contentView.rightAnchor.constraint(
+                    equalTo: self.rightAnchor,
+                    constant: -contentInset.right
+                )
+            ]
+    )
+    NSLayoutConstraint(
+        item: contentView,
+        attribute: .bottom,
+        relatedBy: .equal,
+        toItem: self,
+        attribute: .bottom,
+        multiplier: 1,
+        constant: -contentInset.bottom
+    ).isActive = true
+    NSLayoutConstraint(
+        item: contentView,
+        attribute: .top,
+        relatedBy: .equal,
+        toItem: self,
+        attribute: .top,
+        multiplier: 1,
+        constant: contentInset.top
+    ).isActive = true
 
     // Get super view to show
     view.addSubview(self)
@@ -224,8 +247,14 @@ public extension HSSnackbar {
       toItem = view
     }
     bottomMarginConstraint = NSLayoutConstraint(
-      item: self, attribute: .bottom, relatedBy: .equal,
-      toItem: toItem, attribute: .bottom, multiplier: 1, constant: -margins.bottom)
+        item: self,
+        attribute: .bottom,
+        relatedBy: .equal,
+        toItem: toItem,
+        attribute: .bottom,
+        multiplier: 1,
+        constant: -margins.bottom
+    )
 
     NSLayoutConstraint(
       item: self, attribute: .leading, relatedBy: .equal,
@@ -280,7 +309,7 @@ public extension HSSnackbar {
 
   fileprivate func dismissAnimated(_ animated: Bool) {
     guard dismissTimer != nil else { return }
-    
+
     invalidDismissTimer()
     let snackbarHeight = frame.size.height
     var safeAreaInsets = UIEdgeInsets.zero
